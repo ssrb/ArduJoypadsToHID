@@ -18,14 +18,17 @@ F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = Joystick
-SRC          = $(TARGET).c NESpad.c Descriptors.c /home/sb/Hacking/arduino-1.5.5/hardware/arduino/avr/cores/arduino/wiring_digital.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS) $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+ARDUINO_AVR_LIBS = /home/sb/Hacking/arduino-1.5.5/hardware/arduino/avr
+SRC          = $(TARGET).c NESpad.c Descriptors.c $(ARDUINO_AVR_LIBS)/cores/arduino/wiring_digital.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = /home/sb/Hacking/LUFA/LUFA
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -I/home/sb/Hacking/arduino-1.5.5/hardware/arduino/avr/cores/arduino\
-	-I/home/sb/Hacking/arduino-1.5.5/hardware/arduino/avr/variants/leonardo
+CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -I$(ARDUINO_AVR_LIBS)/cores/arduino\
+	-I$(ARDUINO_AVR_LIBS)/variants/leonardo
 LD_FLAGS     =
 
 FLASH_SIZE_KB=32
 BOOT_SECTION_SIZE_KB=4
+
+AVRDUDE_PROGRAMMER	=	usbtiny
 
 # Default target
 all:
