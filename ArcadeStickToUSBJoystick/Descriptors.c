@@ -37,34 +37,23 @@
 
 #include "Descriptors.h"
 
-#define HID_DESCRIPTOR_PETE_JOYSTICK(MinAxisVal, MaxAxisVal, MinPhysicalVal, MaxPhysicalVal, Buttons) \
-                        HID_RI_USAGE_PAGE(8, 0x01),                     \
-                        HID_RI_USAGE(8, 0x04),                          \
-                        HID_RI_COLLECTION(8, 0x01),                     \
-                                HID_RI_USAGE(8, 0x01),                      \
-                                HID_RI_COLLECTION(8, 0x00),                 \
-                                        HID_RI_USAGE(8, 0x30),                  \
-                                        HID_RI_USAGE(8, 0x31),                  \
-                                        HID_RI_LOGICAL_MINIMUM(16, MinAxisVal), \
-                                        HID_RI_LOGICAL_MAXIMUM(16, MaxAxisVal), \
-                                        HID_RI_PHYSICAL_MINIMUM(16, MinPhysicalVal), \
-                                        HID_RI_PHYSICAL_MAXIMUM(16, MaxPhysicalVal), \
-                                        HID_RI_REPORT_COUNT(8, 2),              \
-                                        HID_RI_REPORT_SIZE(8, (((MinAxisVal >= -128) && (MaxAxisVal <= 127)) ? 8 : 16)), \
-                                        HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), \
-                                HID_RI_END_COLLECTION(0),                   \
-                                HID_RI_USAGE_PAGE(8, 0x09),                 \
-                                HID_RI_USAGE_MINIMUM(8, 0x01),              \
-                                HID_RI_USAGE_MAXIMUM(8, Buttons),           \
-                                HID_RI_LOGICAL_MINIMUM(8, 0x00),            \
-                                HID_RI_LOGICAL_MAXIMUM(8, 0x01),            \
-                                HID_RI_REPORT_SIZE(8, 0x01),                \
-                                HID_RI_REPORT_COUNT(8, Buttons),            \
-                                HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), \
-                                HID_RI_REPORT_SIZE(8, (Buttons % 8) ? (8 - (Buttons % 8)) : 0), \
-                                HID_RI_REPORT_COUNT(8, 0x01),               \
-                                HID_RI_INPUT(8, HID_IOF_CONSTANT),          \
-                        HID_RI_END_COLLECTION(0)
+#define HID_RI_USAGE_JOYSTICK HID_RI_USAGE(8, 0x04)
+#define HID_RI_USAGE_X HID_RI_USAGE(8, 0x30)
+#define HID_RI_USAGE_Y HID_RI_USAGE(8, 0x31)
+#define HID_DESCRIPTOR_PETE_JOYSTICK \
+    HID_RI_USAGE_PAGE(8, 0x01),                 \
+    HID_RI_USAGE_JOYSTICK,                      \
+    HID_RI_COLLECTION(8, 0x00),                 \
+           	HID_RI_USAGE_X,                     \
+            HID_RI_USAGE_Y,                     \
+            HID_RI_LOGICAL_MINIMUM(16, -1),     \
+            HID_RI_LOGICAL_MAXIMUM(16, 1),      \
+            HID_RI_PHYSICAL_MINIMUM(16, -1),    \
+            HID_RI_PHYSICAL_MAXIMUM(16, 1),     \
+            HID_RI_REPORT_COUNT(8, 2),          \
+            HID_RI_REPORT_SIZE(8, 8),           \
+            HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), \
+    HID_RI_END_COLLECTION(0)
 
 
 /** HID class report descriptor. This is a special descriptor constructed with values from the
@@ -73,9 +62,29 @@
  *  the device will send, and what it may be sent back from the host. Refer to the HID specification for
  *  more details on HID report descriptors.
  */
-const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
+const char PROGMEM JoystickReport[] =
 {
-	HID_DESCRIPTOR_PETE_JOYSTICK(-1, 1, -1, 1, 0)
+	//HID_DESCRIPTOR_PETE_JOYSTICK
+	
+	// Generated from joystick.hid by HID Descriptor tool
+	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+    0x15, 0x00,                    // LOGICAL_MINIMUM (0)
+    0x09, 0x04,                    // USAGE (Joystick)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0x05, 0x01,                    //   USAGE_PAGE (Generic Desktop)
+    0x09, 0x01,                    //   USAGE (Pointer)
+    0xa1, 0x00,                    //   COLLECTION (Physical)
+    0x09, 0x30,                    //     USAGE (X)
+    0x09, 0x31,                    //     USAGE (Y)
+    0x15, 0xff,                    //     LOGICAL_MINIMUM (-1)
+    0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
+    0x35, 0xff,                    //     PHYSICAL_MINIMUM (-1)
+    0x45, 0x01,                    //     PHYSICAL_MAXIMUM (1)
+    0x95, 0x02,                    //     REPORT_COUNT (2)
+    0x75, 0x08,                    //     REPORT_SIZE (8)
+    0x81, 0x02,                    //     INPUT (Data,Var,Abs)
+    0xc0,                          //   END_COLLECTION
+    0xc0                           // END_COLLECTION
 };
 
 /** Device descriptor structure. This descriptor, located in FLASH memory, describes the overall

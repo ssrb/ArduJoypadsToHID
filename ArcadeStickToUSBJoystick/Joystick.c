@@ -37,11 +37,6 @@
 #include "Joystick.h"
 #include "Arduino.h"
 
-#define JOY_UP 2
-#define JOY_DOWN  3
-#define JOY_LEFT 4
-#define JOY_RIGHT 5
-
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevJoystickHIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
 
@@ -147,16 +142,11 @@ void EVENT_USB_Device_StartOfFrame(void)
 	HID_Device_MillisecondElapsed(&Joystick_HID_Interface);
 }
 
-/** HID class driver callback function for the creation of HID reports to the host.
- *
- *  \param[in]     HIDInterfaceInfo  Pointer to the HID class interface configuration structure being referenced
- *  \param[in,out] ReportID    Report ID requested by the host if non-zero, otherwise callback should set to the generated report ID
- *  \param[in]     ReportType  Type of the report to create, either HID_REPORT_ITEM_In or HID_REPORT_ITEM_Feature
- *  \param[out]    ReportData  Pointer to a buffer where the created report should be stored
- *  \param[out]    ReportSize  Number of bytes written in the report (or zero if no report is to be sent)
- *
- *  \return Boolean \c true to force the sending of the report, \c false to let the library determine if it needs to be sent
- */
+#define JOY_UP 2
+#define JOY_DOWN  3
+#define JOY_LEFT 4
+#define JOY_RIGHT 5
+
 char ReadAxis(int negDirPin, int posDirPin) {
 	if(digitalRead(negDirPin)) {
  		return -1;
@@ -167,6 +157,16 @@ char ReadAxis(int negDirPin, int posDirPin) {
 	return 0;
 }
 
+/** HID class driver callback function for the creation of HID reports to the host.
+ *
+ *  \param[in]     HIDInterfaceInfo  Pointer to the HID class interface configuration structure being referenced
+ *  \param[in,out] ReportID    Report ID requested by the host if non-zero, otherwise callback should set to the generated report ID
+ *  \param[in]     ReportType  Type of the report to create, either HID_REPORT_ITEM_In or HID_REPORT_ITEM_Feature
+ *  \param[out]    ReportData  Pointer to a buffer where the created report should be stored
+ *  \param[out]    ReportSize  Number of bytes written in the report (or zero if no report is to be sent)
+ *
+ *  \return Boolean \c true to force the sending of the report, \c false to let the library determine if it needs to be sent
+ */
 bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDInterfaceInfo,
                                          uint8_t* const ReportID,
                                          const uint8_t ReportType,
