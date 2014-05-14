@@ -41,17 +41,7 @@ f
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevJoystickHIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
 
-NESpad *pad;
-
-#define SEGA_GENESIS_JOY_UP 2
-#define SEGA_GENESIS_JOY_DOWN  3
-#define SEGA_GENESIS_JOY_LEFT 4
-#define SEGA_GENESIS_JOY_RIGHT 5
-#define SEGA_GENESIS_JOY_A 7
-#define SEGA_GENESIS_JOY_B 7
-#define SEGA_GENESIS_JOY_C 6
-#define SEGA_GENESIS_JOY_START  6
-#define SEGA_GENESIS_JOY_SELECT 8
+NESpad gamepad;
 
 /** LUFA HID Class driver interface configuration and state information. This structure is
  *  passed to all HID Class driver functions, so that multiple instances of the same class
@@ -93,7 +83,7 @@ int main(void)
 
 
 void NESJoypad_Init() {
-	pad = NESpad_Create(2, 3, 4);
+	NESpad_Init(&gamepad, 2, 3, 4);
 }
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
@@ -160,6 +150,15 @@ void EVENT_USB_Device_StartOfFrame(void)
 	HID_Device_MillisecondElapsed(&Joystick_HID_Interface);
 }
 
+char ReadAxis(int buttons, int negButton, int posButton) {
+	if (buttons & negButton) {
+		return -1;
+	}
+	if (buttons & posButton) {
+		return 1;
+	}
+	return 0;
+} 
 /** HID class driver callback function for the creation of HID reports to the host.
  *
  *  \param[in]     HIDInterfaceInfo  Pointer to the HID class interface configuration structure being referenced
@@ -179,24 +178,23 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 	USB_JoystickReport_Data_t* JoystickReport = (USB_JoystickReport_Data_t*)ReportData;
 	JoystickReport->Button = 0;
 
-	uint8_t buttons = NESpad_Buttons(pad);
+	uint8_t buttons = NESpad_Buttons(&gamepad);
 
-	if(buttons & NES_UP) {
- 		JoystickReport->Y = -100;
-	} else if(buttons & NES_DOWN) {
-		JoystickReport->Y = +100;
+	JoystickReport->X = ReadAxis(buttons, NES_LEFT, NES_RIGHT);
+	JoystickReport->Y = ReadAxis(buttons, NES_DOWN, NES_UP);
+	
+	if (buttons & NES_A) {
+		bitSet(JoystickReport->Button, 0);
 	}
-
-	if(buttons & NES_LEFT) {
-		JoystickReport->X = -100;
-	} else if(buttons & NES_RIGHT) {
-		JoystickReport->X = +100;
+	if (buttons & NES_B) {
+		bitSet(JoystickReport->Button, 1);
 	}
-
-	JoystickReport->Button |= (!!(buttons & NES_A) << 0);
-	JoystickReport->Button |= (!!(buttons & NES_B) << 1);
-	JoystickReport->Button |= (!!(buttons & NES_START) << 2);
-	JoystickReport->Button |= (!!(buttons & NES_SELECT) << 3);
+	if (buttons & NES_START) {
+		bitSet(JoystickReport->Button, 2);
+	}
+	if (buttons & NES_SELECT) {
+		bitSet(JoystickReport->Button, 3);
+	}
 
 	*ReportSize = sizeof(USB_JoystickReport_Data_t);
 	

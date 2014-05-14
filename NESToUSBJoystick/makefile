@@ -19,7 +19,7 @@ F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = Joystick
 ARDUINO_AVR_LIBS = /home/sb/Hacking/arduino-1.5.5/hardware/arduino/avr
-SRC          = $(TARGET).c NESpad.c Descriptors.c $(ARDUINO_AVR_LIBS)/cores/arduino/wiring_digital.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+SRC          = $(TARGET).c NESpad.c Descriptors.c $(ARDUINO_AVR_LIBS)/cores/arduino/wiring_digital.c $(ARDUINO_AVR_LIBS)/cores/arduino/wiring_shift.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = /home/sb/Hacking/LUFA/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -I$(ARDUINO_AVR_LIBS)/cores/arduino\
 	-I$(ARDUINO_AVR_LIBS)/variants/leonardo
