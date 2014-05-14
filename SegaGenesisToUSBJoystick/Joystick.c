@@ -40,16 +40,6 @@
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevJoystickHIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
 
-#define SEGA_GENESIS_JOY_UP 2
-#define SEGA_GENESIS_JOY_DOWN  3
-#define SEGA_GENESIS_JOY_LEFT 4
-#define SEGA_GENESIS_JOY_RIGHT 5
-#define SEGA_GENESIS_JOY_A 7
-#define SEGA_GENESIS_JOY_B 7
-#define SEGA_GENESIS_JOY_C 6
-#define SEGA_GENESIS_JOY_START  6
-#define SEGA_GENESIS_JOY_SELECT 8
-
 /** LUFA HID Class driver interface configuration and state information. This structure is
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
@@ -152,6 +142,26 @@ void EVENT_USB_Device_StartOfFrame(void)
 	HID_Device_MillisecondElapsed(&Joystick_HID_Interface);
 }
 
+char ReadAxis(int negDirPin, int posDirPin) {
+	if(!digitalRead(negDirPin)) {
+ 		return -1;
+	} 
+	if(!digitalRead(posDirPin)) {
+		return 1;
+	}
+	return 0;
+}
+
+#define SEGA_GENESIS_JOY_UP 2
+#define SEGA_GENESIS_JOY_DOWN  3
+#define SEGA_GENESIS_JOY_LEFT 4
+#define SEGA_GENESIS_JOY_RIGHT 5
+#define SEGA_GENESIS_JOY_A 6
+#define SEGA_GENESIS_JOY_B 6
+#define SEGA_GENESIS_JOY_SELECT 7
+#define SEGA_GENESIS_JOY_C 8
+#define SEGA_GENESIS_JOY_START  8
+
 /** HID class driver callback function for the creation of HID reports to the host.
  *
  *  \param[in]     HIDInterfaceInfo  Pointer to the HID class interface configuration structure being referenced
@@ -173,34 +183,25 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 
 	digitalWrite(SEGA_GENESIS_JOY_SELECT, 1);
 
-	if(!digitalRead(SEGA_GENESIS_JOY_UP)) {
- 		JoystickReport->Y = -100;
-	} else if(!digitalRead(SEGA_GENESIS_JOY_DOWN)) {
-		JoystickReport->Y = +100;
-	}
-
-	if(!digitalRead(SEGA_GENESIS_JOY_LEFT)) {
-		JoystickReport->X = -100;
-	} else if(!digitalRead(SEGA_GENESIS_JOY_RIGHT)) {
-		JoystickReport->X = +100;
-	}
+	JoystickReport->X = ReadAxis(SEGA_GENESIS_JOY_LEFT, SEGA_GENESIS_JOY_RIGHT);
+	JoystickReport->Y = ReadAxis(SEGA_GENESIS_JOY_DOWN, SEGA_GENESIS_JOY_UP);
 
 	if(!digitalRead(SEGA_GENESIS_JOY_B)) {
-		JoystickReport->Button |= (1 << 1);
+		bitSet(JoystickReport->Button, 1);
 	}
 
 	if(!digitalRead(SEGA_GENESIS_JOY_C)) {
-		JoystickReport->Button |= (1 << 2);
+		bitSet(JoystickReport->Button, 2);
 	}
 
 	digitalWrite(SEGA_GENESIS_JOY_SELECT, 0);
 
 	if(!digitalRead(SEGA_GENESIS_JOY_A)) {
-		JoystickReport->Button |= (1 << 0);
+		bitSet(JoystickReport->Button, 0);
 	}
 
 	if(!digitalRead(SEGA_GENESIS_JOY_START)) {
-		JoystickReport->Button |= (1 << 3);
+		bitSet(JoystickReport->Button, 3);
 	}
 
 	*ReportSize = sizeof(USB_JoystickReport_Data_t);

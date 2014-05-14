@@ -43,16 +43,34 @@
  *  the device will send, and what it may be sent back from the host. Refer to the HID specification for
  *  more details on HID report descriptors.
  */
-const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
+const char PROGMEM JoystickReport[] =
 {
-	/* Use the HID class driver's standard Joystick report.
-	 *   Min X/Y/Z Axis values: -100
-	 *   Max X/Y/Z Axis values:  100
-	 *   Min physical X/Y/Z Axis values (used to determine resolution): -1
-	 *   Max physical X/Y/Z Axis values (used to determine resolution):  1
-	 *   Buttons: 2
-	 */
-	HID_DESCRIPTOR_JOYSTICK(-100, 100, -1, 1, 8)
+	0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+    0x15, 0x00,                    // LOGICAL_MINIMUM (0)
+    0x09, 0x05,                    // USAGE (Game Pad)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0x05, 0x01,                    //   USAGE_PAGE (Generic Desktop)
+    0x09, 0x01,                    //   USAGE (Pointer)
+    0xa1, 0x00,                    //   COLLECTION (Physical)
+    0x09, 0x30,                    //     USAGE (X)
+    0x09, 0x31,                    //     USAGE (Y)
+    0x15, 0xff,                    //     LOGICAL_MINIMUM (-1)
+    0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
+    0x35, 0xff,                    //     PHYSICAL_MINIMUM (-1)
+    0x45, 0x01,                    //     PHYSICAL_MAXIMUM (1)
+    0x95, 0x02,                    //     REPORT_COUNT (2)
+    0x75, 0x08,                    //     REPORT_SIZE (8)
+    0x81, 0x02,                    //     INPUT (Data,Var,Abs)
+    0xc0,                          //   END_COLLECTION
+    0x05, 0x09,                    //   USAGE_PAGE (Button)
+    0x19, 0x01,                    //   USAGE_MINIMUM (Button 1)
+    0x29, 0x04,                    //   USAGE_MAXIMUM (Button 4)
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
+    0x75, 0x01,                    //   REPORT_SIZE (1)
+    0x95, 0x04,                    //   REPORT_COUNT (4)
+    0x81, 0x02,                    //   INPUT (Data,Var,Abs)
+    0xc0                           // END_COLLECTION
 };
 
 /** Device descriptor structure. This descriptor, located in FLASH memory, describes the overall
@@ -161,7 +179,7 @@ const USB_Descriptor_String_t PROGMEM ManufacturerString =
 {
 	.Header                 = {.Size = USB_STRING_LEN(11), .Type = DTYPE_String},
 
-	.UnicodeString          = L"Dean Camera"
+	.UnicodeString          = L"SEGA"
 };
 
 /** Product descriptor string. This is a Unicode string containing the product's details in human readable form,
@@ -172,7 +190,7 @@ const USB_Descriptor_String_t PROGMEM ProductString =
 {
 	.Header                 = {.Size = USB_STRING_LEN(18), .Type = DTYPE_String},
 
-	.UnicodeString          = L"LUFA Joystick Demo"
+	.UnicodeString          = L"Genesis gamepad"
 };
 
 /** This function is called by the library when in device mode, and must be overridden (see library "USB Descriptors"
