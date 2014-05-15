@@ -1,35 +1,45 @@
-/** \file
- *
- *  Main source file for the Joystick demo. This file contains the main tasks of
- *  the demo and is responsible for the initial application hardware configuration.
- */
-
 #include "Joystick.h"
+#include "Arduino.h"
 
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
-static uint8_t PrevJoystickHIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
+static uint8_t PrevJoystick1HIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
+static uint8_t PrevJoystick2HIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
 
 /** LUFA HID Class driver interface configuration and state information. This structure is
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
  */
-USB_ClassInfo_HID_Device_t Joystick_HID_Interface =
+USB_ClassInfo_HID_Device_t Joystick1_HID_Interface =
 	{
 		.Config =
 			{
-				.InterfaceNumber              = INTERFACE_ID_Joystick,
+				.InterfaceNumber              = INTERFACE_ID_Joystick1,
 				.ReportINEndpoint             =
 					{
-						.Address              = JOYSTICK_EPADDR,
+						.Address              = JOYSTICK1_EPADDR,
 						.Size                 = JOYSTICK_EPSIZE,
 						.Banks                = 1,
 					},
-				.PrevReportINBuffer           = PrevJoystickHIDReportBuffer,
-				.PrevReportINBufferSize       = sizeof(PrevJoystickHIDReportBuffer),
-			},
+				.PrevReportINBuffer           = PrevJoystick1HIDReportBuffer,
+				.PrevReportINBufferSize       = sizeof(PrevJoystick1HIDReportBuffer),
+			}
 	};
 
-
+USB_ClassInfo_HID_Device_t Joystick2_HID_Interface =
+	{
+		.Config =
+			{
+				.InterfaceNumber              = INTERFACE_ID_Joystick1,
+				.ReportINEndpoint             =
+					{
+						.Address              = JOYSTICK2_EPADDR,
+						.Size                 = JOYSTICK_EPSIZE,
+						.Banks                = 1,
+					},
+				.PrevReportINBuffer           = PrevJoystick2HIDReportBuffer,
+				.PrevReportINBufferSize       = sizeof(PrevJoystick2HIDReportBuffer),
+			}
+	};	
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
@@ -42,7 +52,8 @@ int main(void)
 
 	for (;;)
 	{
-		HID_Device_USBTask(&Joystick_HID_Interface);
+		HID_Device_USBTask(&Joystick1_HID_Interface);
+		HID_Device_USBTask(&Joystick2_HID_Interface);
 		USB_USBTask();
 	}
 }
@@ -60,6 +71,7 @@ void SetupHardware(void)
 	/* Hardware Initialization */
 	LEDs_Init();
 	USB_Init();
+	Joystick_Init();
 }
 
 /** Event handler for the library USB Connection event. */
@@ -79,8 +91,8 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 {
 	bool ConfigSuccess = true;
 
-	ConfigSuccess &= HID_Device_ConfigureEndpoints(&Joystick_HID_Interface);
-
+	ConfigSuccess &= HID_Device_ConfigureEndpoints(&Joystick1_HID_Interface);
+	ConfigSuccess &= HID_Device_ConfigureEndpoints(&Joystick2_HID_Interface);
 	USB_Device_EnableSOFEvents();
 
 	LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
@@ -89,13 +101,30 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-	HID_Device_ProcessControlRequest(&Joystick_HID_Interface);
+	HID_Device_ProcessControlRequest(&Joystick1_HID_Interface);
+	HID_Device_ProcessControlRequest(&Joystick2_HID_Interface);
 }
 
 /** Event handler for the USB device Start Of Frame event. */
 void EVENT_USB_Device_StartOfFrame(void)
 {
-	HID_Device_MillisecondElapsed(&Joystick_HID_Interface);
+	HID_Device_MillisecondElapsed(&Joystick1_HID_Interface);
+	HID_Device_MillisecondElapsed(&Joystick2_HID_Interface);
+}
+
+#define JOY_UP 2
+#define JOY_DOWN  3
+#define JOY_LEFT 4
+#define JOY_RIGHT 5
+
+char ReadAxis(int negDirPin, int posDirPin) {
+	if(digitalRead(negDirPin)) {
+ 		return -1;
+	} 
+	if(digitalRead(posDirPin)) {
+		return 1;
+	}
+	return 0;
 }
 
 /** HID class driver callback function for the creation of HID reports to the host.
@@ -112,10 +141,13 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          uint8_t* const ReportID,
                                          const uint8_t ReportType,
                                          void* ReportData,
-                                         uint16_t* const ReportSize)
-{
+                                         uint16_t* const ReportSize) {
 	USB_JoystickReport_Data_t* JoystickReport = (USB_JoystickReport_Data_t*)ReportData;
 	*ReportSize = sizeof(USB_JoystickReport_Data_t);
+
+	JoystickReport->X = ReadAxis(JOY_LEFT, JOY_RIGHT);
+	JoystickReport->Y = ReadAxis(JOY_DOWN, JOY_UP);
+
 	return false;
 }
 
@@ -136,3 +168,9 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 	// Unused (but mandatory for the HID class driver) in this demo, since there are no Host->Device reports
 }
 
+void Joystick_Init() {
+	pinMode(JOY_UP, INPUT);
+	pinMode(JOY_DOWN, INPUT);
+	pinMode(JOY_LEFT, INPUT);
+	pinMode(JOY_RIGHT, INPUT);
+}

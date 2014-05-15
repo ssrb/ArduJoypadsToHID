@@ -20,10 +20,16 @@
 		{
 			USB_Descriptor_Configuration_Header_t Config;
 
-			// Joystick HID Interface
-			USB_Descriptor_Interface_t            HID_Interface;
-			USB_HID_Descriptor_HID_t              HID_JoystickHID;
-	        USB_Descriptor_Endpoint_t             HID_ReportINEndpoint;
+			// Joystick1 HID Interface
+			USB_Descriptor_Interface_t            HID_J1Interface;
+			USB_HID_Descriptor_HID_t              HID_J1HID;
+	        USB_Descriptor_Endpoint_t             HID_J1ReportINEndpoint;
+
+	        // Joystick2 HID Interface
+			USB_Descriptor_Interface_t            HID_J2Interface;
+			USB_HID_Descriptor_HID_t              HID_J2HID;
+	        USB_Descriptor_Endpoint_t             HID_J2ReportINEndpoint;
+
 		} USB_Descriptor_Configuration_t;
 
 		/** Enum for the device interface descriptor IDs within the device. Each interface descriptor
@@ -32,7 +38,8 @@
 		 */
 		enum InterfaceDescriptors_t
 		{
-			INTERFACE_ID_Joystick = 0, /**< Joystick interface desciptor ID */
+			INTERFACE_ID_Joystick1 = 0, /**< Joystick1 interface desciptor ID */
+			INTERFACE_ID_Joystick2 = 1, /**< Joystick2 interface desciptor ID */
 		};
 
 		/** Enum for the device string descriptor IDs within the device. Each string descriptor should
@@ -48,7 +55,8 @@
 
 	/* Macros: */
 		/** Endpoint address of the Joystick HID reporting IN endpoint. */
-		#define JOYSTICK_EPADDR              (ENDPOINT_DIR_IN | 1)
+		#define JOYSTICK1_EPADDR              (ENDPOINT_DIR_IN | 1)
+		#define JOYSTICK2_EPADDR              (ENDPOINT_DIR_IN | 3)
 
 		/** Size in bytes of the Joystick HID reporting IN endpoint. */
 		#define JOYSTICK_EPSIZE              8
